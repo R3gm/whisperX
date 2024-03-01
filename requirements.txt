@@ -5,3 +5,4 @@ transformers
 pandas
 setuptools>=65
 nltk
+speechbrain==0.5.16

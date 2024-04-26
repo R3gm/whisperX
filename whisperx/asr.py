@@ -1,7 +1,7 @@
 import os
 import warnings
 from typing import List, Union, Optional, NamedTuple
-
+from tqdm import tqdm
 import ctranslate2
 import faster_whisper
 import numpy as np
@@ -215,11 +215,12 @@ class FasterWhisperPipeline(Pipeline):
         segments: List[SingleSegment] = []
         batch_size = batch_size or self._batch_size
         total_segments = len(vad_segments)
+        progress_bar = None
         for idx, out in enumerate(self.__call__(data(audio, vad_segments), batch_size=batch_size, num_workers=num_workers)):
             if print_progress:
-                base_progress = ((idx + 1) / total_segments) * 100
-                percent_complete = base_progress / 2 if combined_progress else base_progress
-                print(f"Progress: {percent_complete:.2f}%...")
+                if progress_bar is None:
+                    progress_bar = tqdm(total=total_segments, desc="ASR")
+                progress_bar.update(1)
             text = out['text']
             if batch_size in [0, 1, None]:
                 text = text[0]
@@ -230,6 +231,8 @@ class FasterWhisperPipeline(Pipeline):
                     "end": round(vad_segments[idx]['end'], 3)
                 }
             )
+        if progress_bar:
+            progress_bar.close()
 
         # revert the tokenizer if multilingual inference is enabled
         if self.preset_language is None:

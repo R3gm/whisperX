@@ -15,7 +15,9 @@ from tqdm import tqdm
 
 from .diarize import Segment as SegmentX
 
-VAD_SEGMENTATION_URL = "https://whisperx.s3.eu-west-2.amazonaws.com/model_weights/segmentation/0b5b3216d60a2d32fc086b47ea8c67589aaeb26b7e07fcbe620d6d0b83e209ea/pytorch_model.bin"
+# Original pyannote vad model 
+VAD_SEGMENTATION_URL = "https://huggingface.co/philschmid/pyannote-segmentation/resolve/d13283ce236dd60ccbe5dafe181ae8fc57e85bfb/pytorch_model.bin"
+VAD_HASH = "0b5b3216d60a2d32fc086b47ea8c67589aaeb26b7e07fcbe620d6d0b83e209ea"
 
 def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=None, model_fp=None):
     model_dir = torch.hub._get_torch_home()
@@ -43,7 +45,7 @@ def load_vad_model(device, vad_onset=0.500, vad_offset=0.363, use_auth_token=Non
                     loop.update(len(buffer))
 
     model_bytes = open(model_fp, "rb").read()
-    if hashlib.sha256(model_bytes).hexdigest() != VAD_SEGMENTATION_URL.split('/')[-2]:
+    if hashlib.sha256(model_bytes).hexdigest() != VAD_HASH:
         raise RuntimeError(
             "Model has been downloaded but the SHA256 checksum does not not match. Please retry loading the model."
         )
